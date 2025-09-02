@@ -49,7 +49,7 @@ using namespace llvm;
 // can also be achieved by stripping the associated metadata tags from IR, but
 // this option is sometimes more convenient.
 static cl::opt<bool> EnableScopedNoAlias("enable-scoped-noalias",
-                                         cl::init(true), cl::Hidden);
+                                         cl::init(false), cl::Hidden);
 
 AliasResult ScopedNoAliasAAResult::alias(const MemoryLocation &LocA,
                                          const MemoryLocation &LocB,
