@@ -330,23 +330,13 @@ static bool NoAliasObjectMayHaveEscaped(const IntrinsicInst *AII,
   // object of A, and see where they first escape. If this is not before
   // BInst, it cannot be based on A.
 
-  // If the noalias object is still in memory, we must be certain this
-  // does not escape; or there could be an intrinsic that is not visible to us
-  const Value *ObjectP = getNoAliasObjectP(AII);
-  if (!isa<ConstantPointerNull>(ObjectP)) {
-    SmallVector<const Value *, 4> Objs;
-    getUnderlyingObjects(ObjectP, Objs);
-    for (const Value* V : Objs) {
-      // If this is not some local function object, this is too dangerous: abort
-      if (!isIdentifiedFunctionLocal(V))
-        return true;
-      // Detect escape
-      if (PointerMayBeCapturedBefore(V, /*ReturnCaptures=*/false, BInst, DT,
-                                     /*IncludeI=*/true,
-                                     MaxNoAliasPointerCaptureDepth))
-        return true;
-    }
-  }
+  // A noalias object in memory (non-null %p.addr) can escape without any
+  // noalias intrinsic in this function: a callee that gets %p.addr can load the
+  // restrict pointer from it and store it elsewhere. Capture tracking of
+  // %p.addr does not see this, so conservatively assume it escaped.
+  // TODO: tracking the uses of %p.addr would make this more precise.
+  if (!isa<ConstantPointerNull>(getNoAliasObjectP(AII)))
+    return true;
 
   // To find all the intrinsics, we take a shortcut: the MetadataAsValue
   // for the scope arg is uniqued and it has a use list.
