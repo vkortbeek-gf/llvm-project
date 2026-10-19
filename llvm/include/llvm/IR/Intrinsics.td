@@ -1049,7 +1049,8 @@ def int_experimental_ptr_provenance
 def int_noalias_decl
     : DefaultAttrsIntrinsic<[llvm_anyptr_ty],
                 [llvm_anyptr_ty, llvm_anyint_ty, llvm_metadata_ty],
-                [IntrInaccessibleMemOnly]>; // blocks LICM and some more
+                [IntrInaccessibleMemOnly, // blocks LICM and some more
+                 NoCapture<ArgIndex<0>>]>; // p.alloca is only used for association
 
 // 'llvm.noalias' intrinsic: Introduces noalias information in the pointer
 // computation path, normally right after the loading of the pointer value.
